@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "lm2596_module")(type "KiCad")(uri "${KIPRJMOD}/Lib/lm2596_module.pretty")(options "")(descr ""))
+)
