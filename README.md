@@ -23,3 +23,9 @@ You can find the component list [here](SDC_Schematic/SDC_Schematic.csv).
 The case along with the motor is available here: https://quartzcomponents.com/products/2wd-smart-robot-car-chassis-kit
 
 MOC7811 optical encoders: https://quartzcomponents.com/products/moc-7811-encoder-sensor
+
+Servo: https://quartzcomponents.com/products/tower-pro-sg90-servo-9-gms-mini-micro-servo-motor?_pos=1&_sid=c2dd11a64&_ss=r
+
+HCSR04(Ultrasonic sensor): https://quartzcomponents.com/products/hc-sr04-ultrasonic-sensor-module?_pos=1&_sid=1f37cc7e0&_ss=r
+
+Ultrasonic sensor mount: https://quartzcomponents.com/products/ultrasonic-sensor-mounting-bracket-for-hc-sr04?_pos=3&_sid=1f37cc7e0&_ss=r
