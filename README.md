@@ -16,3 +16,10 @@ So we need to make certain changes to the fuse bits of the ATmega 8. Below are t
 The ```-P <port>```argument specifies the connection port. In my case, the arduino is connected to ```COM5``` and hence the argument ```-P COM5```. For ```-p <partno>``` either ```-p m8``` or ```-p atmega8``` can be used. Refer this [guide](https://www.ladyada.net/learn/avr/avrdude.html) for more information.
 
 5. That is all. The ATmega8 is now ready to be programmed with PlatformIO using the arduino as an ISP programmer.
+
+# PART LIST:
+You can find the component list [here](SDC_Schematic/SDC_Schematic.csv).
+
+The case along with the motor is available here: https://quartzcomponents.com/products/2wd-smart-robot-car-chassis-kit
+
+MOC7811 optical encoders: https://quartzcomponents.com/products/moc-7811-encoder-sensor
