@@ -37,13 +37,13 @@ void motorMove(Direction direction)
         break;
 
     case Direction::RIGHT:
-        PORTC = _BV(_1A) | _BV(_4A);
+        PORTC = _BV(_2A) | _BV(_3A);
         OCR1A = 255;
         OCR1B = 255;
         break;
 
     case Direction::LEFT:
-        PORTC = _BV(_2A) | _BV(_3A);
+        PORTC = _BV(_1A) | _BV(_4A);
         OCR1A = 255;
         OCR1B = 255;
         break;
@@ -75,11 +75,11 @@ void motorMove(Direction direction, uint8_t lPWM, uint8_t rPWM)
         break;
 
     case Direction::RIGHT:
-        PORTC = _BV(_1A) | _BV(_4A);
+        PORTC = _BV(_2A) | _BV(_3A);
         break;
 
     case Direction::LEFT:
-        PORTC = _BV(_2A) | _BV(_3A);
+        PORTC = _BV(_1A) | _BV(_4A);
         break;
 
     case Direction::BACK:
