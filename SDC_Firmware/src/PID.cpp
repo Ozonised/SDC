@@ -1,6 +1,6 @@
 #include "PID.h"
 
-PID::PID(float maxOutput, float minOutput, float interval)
+PID::PID()
 {
     KI = 0;
     KP = 0;
@@ -8,17 +8,30 @@ PID::PID(float maxOutput, float minOutput, float interval)
     I = 0;
 
     setPoint = 0;
+    error = 0;
     prevError = 0;
-    
-    maxLimit = maxOutput;
-    minLimit = minOutput;
 
-    this->interval = interval;
+    maxLimit = 0;
+    minLimit = 0;
+    interval = 0;
+}
+
+PID::PID(float maxOutput, float minOutput, float interval)
+    : maxLimit(maxOutput), minLimit(minOutput), interval(interval)
+{
+    KI = 0;
+    KP = 0;
+    KD = 0;
+    I = 0;
+
+    setPoint = 0;
+    error = 0;
+    prevError = 0;
 }
 
 float PID::calculate(float measuredValue)
 {
-    float error = 0, D = 0;
+    float D = 0;
 
     error = setPoint - measuredValue;
 
@@ -30,7 +43,7 @@ float PID::calculate(float measuredValue)
 
     D = (error - prevError) / interval;
 
-    pid = (KI * error) + (KI * I) + (KD * D);
+    pid = (KP * error) + (KI * I) + (KD * D);
 
     // clamping PID value
     if (pid > maxLimit)
