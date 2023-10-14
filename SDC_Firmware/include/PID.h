@@ -10,9 +10,9 @@ class PID
         float pid;
         float setPoint;
         float error;
-        float interval; // loop period
         float maxLimit; // maximum output limit
         float minLimit; // minimum output limit
+        float interval; // loop period
 
         PID();
 
