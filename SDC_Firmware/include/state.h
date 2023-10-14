@@ -11,5 +11,5 @@ extern Direction dir;
 extern volatile unsigned long measured_left_motor_count, measured_right_motor_count;
 extern void (*currentState)(void);
 
-void scanDistance();
+void scanArea();
 void drive();
