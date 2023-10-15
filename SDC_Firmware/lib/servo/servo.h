@@ -3,5 +3,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-void servoInit();
-void servoSet(uint8_t pos);
+namespace Servo
+{
+    void Init();
+    void Set(uint8_t pos);
+} // namespace Servo

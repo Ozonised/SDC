@@ -11,6 +11,9 @@ enum class Direction : uint8_t
     STOP
 };
 
-void l293d_init();
-void motorMove(Direction direction);
-void motorMove(Direction direction, uint8_t lPWM, uint8_t rPWM);
+namespace Motor
+{
+    void Init();
+    void Move(Direction direction);
+    void Move(Direction direction, uint8_t lPWM, uint8_t rPWM);
+} // namespace Motor
