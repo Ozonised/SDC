@@ -1,12 +1,22 @@
 #include "l293d.h"
 
-
 // L293D pins
 const uint8_t EN34 = PB2, EN12 = PB1, _1A = PC0, _2A = PC1, _3A = PC2, _4A = PC3;
 
+Direction dir = Direction::STOP;
 
 namespace Motor
 {
+    namespace Right
+    {
+        volatile long count = 0;
+    } // namespace rightMotor
+
+    namespace Left
+    {
+        volatile long count = 0;
+    } // namespace leftMotor
+
     void Init()
     {
         DDRC |= (1 << _1A) | (1 << _2A) | (1 << _3A) | (1 << _4A);
@@ -18,6 +28,13 @@ namespace Motor
         TCNT1 = 0;
         OCR1A = 0;
         OCR1B = 0;
+
+        // Interrupts on failing edge for the encoders
+        // right encoder at PD2 pin, left encoder at pin PD3
+        cli();
+        MCUCR |= _BV(ISC11) | _BV(ISC01);
+        GICR |= _BV(INT1) | _BV(INT0);
+        sei();
 
         DDRB |= (1 << EN34) | (1 << EN12);
     }
@@ -96,3 +113,13 @@ namespace Motor
         OCR1B = lPWM;
     }
 } // namespace Motor
+
+ISR(INT0_vect)
+{
+    Motor::Right::count++;
+}
+
+ISR(INT1_vect)
+{
+    Motor::Left::count++;
+}
