@@ -1,7 +1,6 @@
 #pragma once
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include <Arduino.h>
 
 namespace Servo
 {
