@@ -1,33 +1,49 @@
 #include "state.h"
 
-static unsigned short objectDistance, moveDistance;
-static const uint8_t maintainDistance = 18; // distance to be maintained between the object and vechicle
-static const uint8_t encoderSlotsCount = 20;       // no of slots on the encoder wheel
-static const float wheelCircumference = 19;
+static const uint8_t maintainDistance = 20; // distance to be maintained between the object and vechicle
+// static const uint8_t encoderSlotsCount = 20;       // no of slots on the encoder wheel
+// static const float wheelCircumference = 19;
 
+static const uint8_t motorTicksToTurn = 10; // no of ticks to make a 90 degree turn
 
-static uint8_t servoAngles[3] = {0, 90, 180};
+static unsigned long currentMillis, prevMillis;
+static const unsigned long loopPeriod = 60; // loop period in ms
 
-void scanDistance()
+PID drivePID(255, -255, 0.06);
+PID turnPID(255, -255, 0.06);
+
+void PID_Init()
 {
+    drivePID.setPoint = maintainDistance;
+    drivePID.KP = -23;
+    turnPID.KD = 0.28;
+    turnPID.setPoint = motorTicksToTurn;
+    turnPID.KP = 25;
+    turnPID.KD = 0.15;
+}
+
+void scanArea()
+{
+    static uint8_t servoAngles[3] = {0, 90, 180};
     uint8_t maxDistanceServoAngle; // The  servo angle at which the measured distance is maximum
-    servoSet(90);
+    unsigned short objectDistance = 0;
+
+    Servo::Set(90);
+    delay(200);
+
     objectDistance = hcsr04.getDistance();
 
-    if (objectDistance >= 100)
+    if (objectDistance > maintainDistance)
     {
-        objectDistance = 100;
         dir = Direction::FORWARD;
     }
-    else if (objectDistance <= maintainDistance) // an obstacle has been encountered
+    else
     {
-        dir = Direction::STOP;
-        motorMove(dir);
-        // scan the space in a 180 degree arc and find the maximum distance
+        // scan the space in a 180 degree arc and find the servo angle at which there's maximum distance available
         for (uint8_t i = 0; i < 3; i++)
         {
-            servoSet(servoAngles[i]);
-            delay(400);
+            Servo::Set(servoAngles[i]);
+            delay(200);
             if (hcsr04.getDistance() > objectDistance)
             {
                 objectDistance = hcsr04.distance;
@@ -42,66 +58,87 @@ void scanDistance()
         else
             dir = Direction::FORWARD;
     }
-    else
-    {
-        dir = Direction::FORWARD;
-    }
 
-    cli();
-    measured_left_motor_count = 0;
-    measured_right_motor_count = 0;
-    sei();
-
-    moveDistance = objectDistance - maintainDistance;
     currentState = drive;
 }
 
 void drive()
 {
-    unsigned long distanceToEncoderTicks; // no of encoder ticks to travel a specified distance
-    uint8_t left_PWM_val = 0, right_PWM_Val = 0;
+    unsigned long temp_left_motor_count = 0, temp_right_motor_count = 0, average_motor_count = 0, prev_motor_count = 0;
+    unsigned short measurement;
+    short pwm;
 
-    servoSet(90);
+    Servo::Set(90);
+    delay(200);
 
-    switch (dir)
+    while (dir == Direction::LEFT || dir == Direction::RIGHT)
     {
-    case Direction::LEFT:
-    case Direction::RIGHT:
-        // to turn left or right, the encoder needs to make 5 ticks, this was found with trial and error
-        distanceToEncoderTicks = 5;
-        left_PWM_val = 150;
-        right_PWM_Val = 150;
-        break;
+        currentMillis = millis();
 
-    case Direction::FORWARD:
-    case Direction::BACK:
-        distanceToEncoderTicks = ((float)encoderSlotsCount / wheelCircumference) * moveDistance;
-        left_PWM_val = 255;
-        right_PWM_Val = 255;
-        break;
+        if ((currentMillis - prevMillis) > loopPeriod)
+        {
+            cli();
+            temp_right_motor_count = Motor::Right::count;
+            temp_left_motor_count = Motor::Left::count;
+            sei();
 
-    default:
-        break;
+            average_motor_count = (temp_left_motor_count + temp_right_motor_count) / 2;
+            pwm = turnPID.calculate(average_motor_count);
+
+            Motor::Move(dir, pwm, pwm);
+
+            if (turnPID.error <= -1)
+            {
+                Motor::Move(Direction::STOP);
+                dir = Direction::FORWARD;
+                cli();
+                Motor::Left::count = 0;
+                Motor::Right::count = 0;
+                sei();
+            }
+
+            prevMillis = currentMillis;
+        }
     }
 
-    unsigned long left_motor_count = 0, right_motor_count = 0;
-
-    motorMove(dir, left_PWM_val, right_PWM_Val);
-    while (left_motor_count < distanceToEncoderTicks && right_motor_count < distanceToEncoderTicks)
+    while (dir == Direction::FORWARD || dir == Direction::BACK)
     {
-        cli();
-        left_motor_count = measured_left_motor_count;
-        right_motor_count = measured_right_motor_count;
-        sei();
-        
+        currentMillis = millis();
 
-        // measure the distance every 100ms when the vechicle is driving in the forward direction
-        // if the distance between the vechile and the object is less than  10cm then stop the vechile
-        if (dir != Direction::LEFT && dir != Direction::RIGHT && hcsr04.getDistance() <= maintainDistance)
-            break;
-        delay(50);
+        if (currentMillis - prevMillis >= loopPeriod)
+        {
+            measurement = hcsr04.getDistance();
+
+            cli();
+            temp_right_motor_count = Motor::Right::count;
+            temp_left_motor_count = Motor::Left::count;
+            sei();
+
+            average_motor_count = (temp_left_motor_count + temp_right_motor_count) / 2;
+
+            pwm = drivePID.calculate(measurement);
+
+            if (drivePID.error < 0)
+                dir = Direction::FORWARD;
+            else if (drivePID.error > 0)
+                dir = Direction::BACK;
+
+            if (pwm < 0)
+                pwm *= -1;
+
+            Motor::Move(dir, pwm, pwm);
+
+            // if the vechicle is off by 2cm from the maintainDistance
+            // prev_motor_count == average_motor_count ,i.e, the vechicle is not moving
+            if (drivePID.error <= 2 && drivePID.error >= -2 && prev_motor_count == average_motor_count)
+            {
+                dir = Direction::STOP;
+                Motor::Move(dir);
+            }
+
+            prevMillis = currentMillis;
+            prev_motor_count = average_motor_count;
+        }
     }
-    dir = Direction::STOP;
-    motorMove(dir);
-    currentState = scanDistance;
+    currentState = scanArea;
 }

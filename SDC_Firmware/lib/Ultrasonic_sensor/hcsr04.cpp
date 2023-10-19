@@ -1,10 +1,8 @@
-#include "Arduino.h"
 #include "hcsr04.h"
 
 HCSR04::HCSR04(uint8_t trigPin, uint8_t echoPin)
+    : trig{trigPin}, echo{echoPin}
 {
-    trig = trigPin;
-    echo = echoPin;
     distance = 0;
 
     digitalWrite(trig, LOW);
