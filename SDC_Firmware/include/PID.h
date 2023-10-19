@@ -4,13 +4,13 @@ class PID
 {
     private:
         float I;
+        float prevError;
 
     public:
         float KI, KP, KD;   // gains
         float pid;
         float setPoint;
         float error;
-        float prevError;
         float maxLimit; // maximum output limit
         float minLimit; // minimum output limit
         float interval; // loop period

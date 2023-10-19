@@ -5,11 +5,11 @@
 class HCSR04
 {
 private:
-    uint8_t trig;
-    uint8_t echo;
+    unsigned long duration;
+    const uint8_t trig;
+    const uint8_t echo;
 
 public:
-    unsigned long duration;
     uint16_t distance;
 
     HCSR04(uint8_t trigPin, uint8_t echoPin);

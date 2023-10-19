@@ -17,7 +17,7 @@ PID::PID()
 }
 
 PID::PID(float maxOutput, float minOutput, float interval)
-    : maxLimit(maxOutput), minLimit(minOutput), interval(interval)
+    : maxLimit{maxOutput}, minLimit{minOutput}, interval{interval}
 {
     KI = 0;
     KP = 0;
